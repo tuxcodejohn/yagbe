@@ -21,89 +21,89 @@ public:
 
   Error insert_rom(cartridge_t const& cartridge)
   {
-    return _mm.insert_rom(cartridge);
+    return mm_.insert_rom(cartridge);
   }
 
   Error load_ram(mem_t const& ram)
   {
-    return _mm.load_ram(ram);
+    return mm_.load_ram(ram);
   }
 
   void power_on()
   {
-    _mm.power_on();
-    _cp.power_on();
-    _t.power_on();
-    _in.power_on();
+    mm_.power_on();
+    cp_.power_on();
+    t_.power_on();
+    in_.power_on();
   }
 
-  void left(bool down) { _in.left(down); }
-  void right(bool down) { _in.right(down); }
-  void up(bool down) { _in.up(down); }
-  void down(bool down) { _in.down(down); }
+  void left(bool down) { in_.left(down); }
+  void right(bool down) { in_.right(down); }
+  void up(bool down) { in_.up(down); }
+  void down(bool down) { in_.down(down); }
 
-  void a(bool down) { _in.a(down); }
-  void b(bool down) { _in.b(down); }
-  void start(bool down) { _in.start(down); }
-  void select(bool down) { _in.select(down); }
+  void a(bool down) { in_.a(down); }
+  void b(bool down) { in_.b(down); }
+  void start(bool down) { in_.start(down); }
+  void select(bool down) { in_.select(down); }
 
   reg_t mem(wide_reg_t addr) const
   {
-    return _mm.read(addr);
+    return mm_.read(addr);
   }
 
   mem_t ram() const
   {
-    return _mm.ram();
+    return mm_.ram();
   }
 
   reg_t screen_width() const
   {
-    return _gr.width();
+    return gr_.width();
   }
 
   reg_t screen_height() const
   {
-    return _gr.height();
+    return gr_.height();
   }
 
   GR::screen_t screen() const
   {
-    return _gr.screen();
+    return gr_.screen();
   }
 
   bool is_v_blank_completed() const
   {
-    return _gr.lx() == 0 and _gr.ly() == 0;
+    return gr_.lx() == 0 and gr_.ly() == 0;
   }
 
   void tick()
   {
-    if (not _mm.is_rom_verified() and _cp.pc() >= 0x0100) {
-      _mm.rom_verified();
+    if (not mm_.is_rom_verified() and cp_.pc() >= 0x0100) {
+      mm_.rom_verified();
     }
 
-    _cp.tick();
-    _in.tick();
-    _t.tick();
-    _gr.tick();
+    cp_.tick();
+    in_.tick();
+    t_.tick();
+    gr_.tick();
 
     // FIXME: remove this serial dbg hack
-    if (_mm.read(0xFF02)) {
-      _mm.write(0xFF02, 0x00);
-      printf("SERIAL:%c\n", _mm.read(0xFF01));
+    if (mm_.read(0xFF02)) {
+      mm_.write(0xFF02, 0x00);
+      printf("SERIAL:%c\n", mm_.read(0xFF01));
     }
   }
 
   void dbg()
   {
-    _cp.dbg();
+    cp_.dbg();
   }
 
 private:
-  MM      _mm;
-  CP      _cp      = { _mm };
-  GR      _gr      = { _mm };
-  Timer   _t       = { _mm };
-  Input   _in      = { _mm };
+  MM      mm_;
+  CP      cp_      = { mm_ };
+  GR      gr_      = { mm_ };
+  Timer   t_       = { mm_ };
+  Input   in_      = { mm_ };
 };

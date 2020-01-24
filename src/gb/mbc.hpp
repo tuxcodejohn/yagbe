@@ -14,13 +14,13 @@ class MBCRomOnly : public MBC
 {
 public:
   MBCRomOnly(mem_t const& rom)
-    : _rom(rom)
+    : rom_(rom)
   {
   }
 
   reg_t read(wide_reg_t addr) const override
   {
-    return _rom[addr];
+    return rom_[addr];
   }
 
   void write(wide_reg_t /*addr*/, reg_t /*value*/) override
@@ -33,7 +33,7 @@ public:
   }
 
 private:
-  mem_t const& _rom;
+  mem_t const& rom_;
 };
 
 class MBC1 : public MBC
@@ -46,11 +46,11 @@ class MBC1 : public MBC
 
 public:
   MBC1(mem_t const& rom, mem_t& ram)
-    : _mode(Mode::Rom)
-    , _low(1)
-    , _high(0)
-    , _rom(rom)
-    , _ram(ram)
+    : mode_(Mode::Rom)
+    , low_(1)
+    , high_(0)
+    , rom_(rom)
+    , ram_(ram)
   {
   }
 
@@ -59,30 +59,30 @@ public:
     // FIXME: handle oom access
 
     if (addr < 0x8000)
-      return _rom[_map_rom_addr(addr)];
+      return rom_[map_rom_addr_(addr)];
 
-    return _ram[_map_ram_addr(addr)];
+    return ram_[map_ram_addr_(addr)];
   }
 
   void write(wide_reg_t addr, reg_t value) override
   {
     if (addr > 0x8000) {
-      _ram[_map_ram_addr(addr)] = value;
+      ram_[map_ram_addr_(addr)] = value;
       return;
     }
 
     if (addr >= 0x2000 and addr <= 0x3FFF) {
-      _low = value == 0 ? 1 : value;
+      low_ = value == 0 ? 1 : value;
       return;
     }
 
     if (addr >= 0x4000 and addr <= 0x5FFF) {
-      _high = value & 0x03;
+      high_ = value & 0x03;
       return;
     }
 
     if (addr >= 0x6000 and addr <= 0x7FFF) {
-      _mode = value == 0 ? Mode::Rom : Mode::Ram;
+      mode_ = value == 0 ? Mode::Rom : Mode::Ram;
       return;
     }
   }
@@ -93,55 +93,55 @@ public:
   }
 
 private:
-  int _rom_bank_nr() const
+  int rom_bank_nr_() const
   {
-    switch (_mode) {
+    switch (mode_) {
     case Mode::Ram:
-      return _low;
+      return low_;
     case Mode::Rom:
-      return _low | ((_high & 0x03) << 5);
+      return low_ | ((high_ & 0x03) << 5);
     }
   }
 
-  int _ram_bank_nr() const
+  int ram_bank_nr_() const
   {
-    switch (_mode) {
+    switch (mode_) {
     case Mode::Ram:
-      return _high & 0x03;
+      return high_ & 0x03;
     case Mode::Rom:
       return 0x00;
     }
   }
 
-  size_t _map_rom_addr(wide_reg_t addr) const
+  size_t map_rom_addr_(wide_reg_t addr) const
   {
     if (addr < 0x4000 or addr > 0x7FFF)
       return addr;
 
-    return (addr - 0x4000) + 0x4000 * _rom_bank_nr();
+    return (addr - 0x4000) + 0x4000 * rom_bank_nr_();
   }
 
-  size_t _map_ram_addr(wide_reg_t addr) const
+  size_t map_ram_addr_(wide_reg_t addr) const
   {
-    return (addr - 0xA000) + 0x2000 * _ram_bank_nr();
+    return (addr - 0xA000) + 0x2000 * ram_bank_nr_();
   }
 
 private:
-  Mode         _mode;
-  int          _low;
-  int          _high;
+  Mode         mode_;
+  int          low_;
+  int          high_;
 
-  mem_t const& _rom;
-  mem_t&       _ram;
+  mem_t const& rom_;
+  mem_t&       ram_;
 };
 
 class MBC2 : public MBC
 {
 public:
   MBC2(mem_t const& rom, mem_t& ram)
-    : _rom_bank_nr(1)
-    , _rom(rom)
-    , _ram(ram)
+    : rom_bank_nr_(1)
+    , rom_(rom)
+    , ram_(ram)
   {
   }
 
@@ -150,20 +150,20 @@ public:
     // FIXME: handle oom access
 
     if (addr < 0x8000)
-      return _rom[_map_rom_addr(addr)];
+      return rom_[map_rom_addr_(addr)];
 
-    return _ram[_map_ram_addr(addr)];
+    return ram_[map_ram_addr_(addr)];
   }
 
   void write(wide_reg_t addr, reg_t value) override
   {
     if (addr > 0x8000) {
-      _ram[_map_ram_addr(addr)] = value;
+      ram_[map_ram_addr_(addr)] = value;
       return;
     }
 
     if (addr >= 0x2000 and addr <= 0x3FFF and addr & 0x0100) {
-      _rom_bank_nr = value == 0 ? 1 : value;
+      rom_bank_nr_ = value == 0 ? 1 : value;
       return;
     }
   }
@@ -174,34 +174,34 @@ public:
   }
 
 private:
-  size_t _map_rom_addr(wide_reg_t addr) const
+  size_t map_rom_addr_(wide_reg_t addr) const
   {
     if (addr < 0x4000 or addr > 0x7FFF)
       return addr;
 
-    return (addr - 0x4000) + 0x4000 * _rom_bank_nr;
+    return (addr - 0x4000) + 0x4000 * rom_bank_nr_;
   }
 
-  size_t _map_ram_addr(wide_reg_t addr) const
+  size_t map_ram_addr_(wide_reg_t addr) const
   {
     return (addr - 0xA000) + 0x2000;
   }
 
 private:
-  int          _rom_bank_nr;
+  int          rom_bank_nr_;
 
-  mem_t const& _rom;
-  mem_t&       _ram;
+  mem_t const& rom_;
+  mem_t&       ram_;
 };
 
 class MBC5 : public MBC
 {
 public:
   MBC5(mem_t const& rom, mem_t& ram)
-    : _ram_bank_nr(1)
-    , _rom_bank_nr(0)
-    , _rom(rom)
-    , _ram(ram)
+    : ram_bank_nr_(1)
+    , rom_bank_nr_(0)
+    , rom_(rom)
+    , ram_(ram)
   {
   }
 
@@ -210,25 +210,25 @@ public:
     // FIXME: handle oom access
 
     if (addr < 0x8000)
-      return _rom[_map_rom_addr(addr)];
+      return rom_[map_rom_addr_(addr)];
 
-    return _ram[_map_ram_addr(addr)];
+    return ram_[map_ram_addr_(addr)];
   }
 
   void write(wide_reg_t addr, reg_t value) override
   {
     if (addr > 0x8000) {
-      _ram[_map_ram_addr(addr)] = value;
+      ram_[map_ram_addr_(addr)] = value;
       return;
     }
 
     if (addr >= 0x2000 and addr <= 0x3FFF) {
-      _rom_bank_nr = value;
+      rom_bank_nr_ = value;
       return;
     }
 
     if (addr >= 0x4000 and addr <= 0x5FFF) {
-      _ram_bank_nr = value & 0x0F;
+      ram_bank_nr_ = value & 0x0F;
       return;
     }
   }
@@ -239,23 +239,23 @@ public:
   }
 
 private:
-  size_t _map_rom_addr(wide_reg_t addr) const
+  size_t map_rom_addr_(wide_reg_t addr) const
   {
     if (addr < 0x4000 or addr > 0x7FFF)
       return addr;
 
-    return (addr - 0x4000) + 0x4000 * _rom_bank_nr;
+    return (addr - 0x4000) + 0x4000 * rom_bank_nr_;
   }
 
-  size_t _map_ram_addr(wide_reg_t addr) const
+  size_t map_ram_addr_(wide_reg_t addr) const
   {
-    return (addr - 0xA000) + 0x2000 * _ram_bank_nr;
+    return (addr - 0xA000) + 0x2000 * ram_bank_nr_;
   }
 
 private:
-  int          _rom_bank_nr;
-  int          _ram_bank_nr;
+  int          rom_bank_nr_;
+  int          ram_bank_nr_;
 
-  mem_t const& _rom;
-  mem_t&       _ram;
+  mem_t const& rom_;
+  mem_t&       ram_;
 };

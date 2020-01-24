@@ -15,7 +15,7 @@ public:
   Error(Error&&) = default;
   
   explicit Error(Code code)
-    : _code(code)
+    : code_(code)
   {}
 
   ~Error() = default;
@@ -31,12 +31,12 @@ public:
 
   bool is_set() const
   {
-    return _code != Code::None;
+    return code_ != Code::None;
   }
 
   std::string text() const
   {
-    switch (_code) {
+    switch (code_) {
     case Code::None:
       return "No error";
     case Code::RomNotSupported: 
@@ -47,5 +47,5 @@ public:
   }
 
 private:
-  Code const _code = Code::None;
+  Code const code_ = Code::None;
 };

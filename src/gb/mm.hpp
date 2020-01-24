@@ -10,37 +10,37 @@ class MM
 public:
   Error insert_rom(mem_t const& rom)
   {
-    return _cr.load(rom);
+    return cr_.load(rom);
   }
 
   Error load_ram(mem_t const& ram)
   {
-    return _cr.load_ram(ram);
+    return cr_.load_ram(ram);
   }
 
   mem_t ram() const
   {
-    return _cr.ram();
+    return cr_.ram();
   }
 
   void power_on()
   {
-    _cr.power_on();
+    cr_.power_on();
 
-    _verified = false;
+    verified_ = false;
 
-    for (auto& mem : _mem)
+    for (auto& mem : mem_)
       mem = 0x00;
   }
 
   bool is_rom_verified() const
   {
-    return _verified;
+    return verified_;
   }
 
   void rom_verified()
   {
-    _verified = true;
+    verified_ = true;
   }
 
   reg_t read(wide_reg_t addr) const
@@ -51,14 +51,14 @@ public:
       addr -= 0x2000; // adjust for mirror ram
     }
 
-    if (addr < 0x0100 and not _verified) {
-      value = _dmg[addr];
+    if (addr < 0x0100 and not verified_) {
+      value = dmg_[addr];
     }
     else if (addr < 0x8000 or (addr >= 0xA000 and addr <= 0xBFFF)) {
-      value = _cr.read(addr);
+      value = cr_.read(addr);
     }
     else {
-      value = _mem[addr];
+      value = mem_[addr];
     }
 
     return value;
@@ -71,7 +71,7 @@ public:
     }
 
     if (not internal and addr == 0xFF44) { // LY
-      _mem[addr] = 0x00;
+      mem_[addr] = 0x00;
     }
 
     if (addr >= 0xE000 and addr < 0xFE00) {
@@ -85,24 +85,24 @@ public:
       }
     }
 
-    if (addr < 0x0100 and not _verified) {
+    if (addr < 0x0100 and not verified_) {
       // don't write
     }
     else if (addr < 0x8000 or (addr >= 0xA000 and addr <= 0xBFFF)) {
-      _cr.write(addr, value);
+      cr_.write(addr, value);
     }
     else {
-      _mem[addr] = value;
+      mem_[addr] = value;
     }
   }
 
 private:
-  bool      _verified = false;
-  Cartridge _cr;
-  mem_t     _rom      = mem_t();
-  mem_t     _mem      = mem_t(0xFFFF, static_cast<uint8_t>(0));
+  bool      verified_ = false;
+  Cartridge cr_;
+  mem_t     rom_      = mem_t();
+  mem_t     mem_      = mem_t(0xFFFF, static_cast<uint8_t>(0));
 
-  std::array<reg_t, 0x100> const _dmg = {{
+  std::array<reg_t, 0x100> const dmg_ = {{
     0x31, 0xfe, 0xff, 0xaf, 0x21, 0xff, 0x9f, 0x32, 0xcb, 0x7c, 0x20, 0xfb,
     0x21, 0x26, 0xff, 0x0e, 0x11, 0x3e, 0x80, 0x32, 0xe2, 0x0c, 0x3e, 0xf3,
     0xe2, 0x32, 0x3e, 0x77, 0x77, 0x3e, 0xfc, 0xe0, 0x47, 0x11, 0x04, 0x01,

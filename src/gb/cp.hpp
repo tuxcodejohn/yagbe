@@ -36,9 +36,9 @@ public:
     mm_.write(0xFFFF, 0xFF); // interrupt enable
 
     // check op code configuration
-    for (int i = 0; i < ops_.size(); ++i) {
+    for (size_t i = 0; i < ops_.size(); ++i) {
       if (ops_[i].code != i) {
-        printf("ERROR: opcode does not match: %02x\n", i);
+        printf("ERROR: opcode does not match: %02zx\n", i);
         exit(5);
       }
     }

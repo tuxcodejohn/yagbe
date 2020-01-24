@@ -47,7 +47,7 @@ int main(int argc, char** argv)
 
   UiSDL ui(gb, 3, false, false);
 
-  int frame = 0;
+  //int frame = 0;
   auto start = std::chrono::steady_clock::now();
   while(ui.is_running()) {
 

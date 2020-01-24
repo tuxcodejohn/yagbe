@@ -201,7 +201,7 @@ private:
         continue;
       }
 
-      int const right_x = s_x;
+//      int const right_x = s_x;
       int const left_x  = s_x - 8;
 
       int const bottom_y = small_sprites ? s_y - 9 : s_y-1;

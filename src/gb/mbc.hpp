@@ -99,6 +99,7 @@ private:
     case Mode::Ram:
       return low_;
     case Mode::Rom:
+    default:
       return low_ | ((high_ & 0x03) << 5);
     }
   }
@@ -109,6 +110,7 @@ private:
     case Mode::Ram:
       return high_ & 0x03;
     case Mode::Rom:
+    default:
       return 0x00;
     }
   }
@@ -253,8 +255,8 @@ private:
   }
 
 private:
-  int          rom_bank_nr_;
   int          ram_bank_nr_;
+  int          rom_bank_nr_;
 
   mem_t const& rom_;
   mem_t&       ram_;

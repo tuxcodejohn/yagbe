@@ -524,7 +524,7 @@ private:
 	uint64_t   cycle_;
 
 	void process_opcode_() {
-		constexpr void* labels[]={
+		static constexpr void* labels[]={
 			&&lab_nop,         // 0x00
 			&&lab_ld_bc_d16,   // 0x01
 			&&lab_ld_bc_a,     // 0x02
@@ -782,7 +782,7 @@ private:
 			&&lab_cp_d8,       // 0xfe
 			&&lab_rsm_38h     // 0xff
 		};
-		constexpr void* cbpfx_labels[] {
+		static constexpr void* cbpfx_labels[] {
 			&&lab_cbpfx_rlc_b   , // 0x00
 				&&lab_cbpfx_rlc_c   , // 0x01
 				&&lab_cbpfx_rlc_d   , // 0x02

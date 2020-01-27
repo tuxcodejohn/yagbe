@@ -118,8 +118,12 @@ class MM
 	private:
 		bool      verified_ = false;
 		Cartridge cr_;
-		mem_t     rom_      = mem_t();
-		mem_t     mem_      = mem_t(0xFFFF, static_cast<uint8_t>(0));
+
+#ifdef WANT_ZEROS_IN_MEM		
+		std::array<reg_t, 0xffff> mem_ {{0}};
+#else
+		std::array<reg_t, 0xffff> mem_;
+#endif
 
 		std::array<reg_t, 0x100> const dmg_ = {{
 			0x31, 0xfe, 0xff, 0xaf, 0x21, 0xff, 0x9f, 0x32, 0xcb, 0x7c, 0x20, 0xfb,

@@ -13,6 +13,25 @@ set(CMAKE_CXX_STANDARD 17)
 set( CMAKE_CXX_EXTENSIONS ON )
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -O3")
+set(CMAKE_CXX_FLAGS_ASAN
+    "-fsanitize=address -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer -g -O3"
+    CACHE STRING "Flags used by the C++ compiler during AddressSanitizer builds."
+    FORCE)
+
+set(CMAKE_CXX_FLAGS_ASAN1
+    "-fsanitize=address -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer -ggdb -O1"
+    CACHE STRING "Flags used by the C++ compiler during AddressSanitizer builds."
+    FORCE)
+
+set(CMAKE_CXX_FLAGS_LSAN
+    "-fsanitize=leak -fno-omit-frame-pointer -g -O2"
+    CACHE STRING "Flags used by the C++ compiler during LeakSanitizer builds."
+    FORCE)
+
+set(CMAKE_CXX_FLAGS_UBSAN
+	"-fsanitize=undefined"
+    CACHE STRING "Flags used by the C compiler during UndefinedBehaviourSanitizer builds."
+    FORCE)
 
 set(SOURCE_FILES
   src/main.cc)

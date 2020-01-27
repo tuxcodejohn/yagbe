@@ -9,6 +9,7 @@
 #include <chrono>
 #include <thread>
 #include <cstdlib>
+#include <algorithm>
 #include <iterator>
 
 int main(int argc, char** argv)
@@ -23,9 +24,11 @@ int main(int argc, char** argv)
 			rom_path,
 			std::ios::in | std::ios::binary);
 
-	GB::cartridge_t cart(
-			(std::istreambuf_iterator<char>(s_cart)),
-			std::istreambuf_iterator<char>());
+	GB::cartridge_t cart;
+	cart.reserve((1 << 16));
+	std::copy ( (std::istreambuf_iterator<char>(s_cart)),
+			std::istreambuf_iterator<char>(),
+			std::back_inserter(cart));
 
 	GB gb;
 	auto const error = gb.insert_rom(cart);
